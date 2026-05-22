@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark nep-scrollbar-thin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXITA Н.Э.П. — Architectural Ledger × NEP v2</title>
+  <meta name="description" content="Независимая экспертная платформа на стыке науки, экономики и права. Прототип Architectural Ledger × NEP v2.">
+  <script>
+    (function () {
+      var key = "nep-proto-theme";
+      var stored = localStorage.getItem(key);
+      var html = document.documentElement;
+      if (stored === "light") {
+        html.classList.remove("dark");
+        html.classList.add("light");
+      } else if (stored === "dark") {
+        html.classList.remove("light");
+        html.classList.add("dark");
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html.nep-scrollbar-thin {
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in srgb, var(--nep-accent) 55%, transparent) transparent;
+    }
+    html.nep-scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+    html.nep-scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    html.nep-scrollbar-thin::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--nep-accent) 55%, transparent);
+      border-radius: 0;
+    }
+    ::selection {
+      background: color-mix(in srgb, var(--nep-accent) 35%, transparent);
+    }
+
+    .skip-link {
+      position: absolute; left: -9999px; top: calc(var(--omni-h) + 0.5rem); z-index: 500;
+      padding: 0.6rem 1rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
+      text-transform: uppercase; background: var(--nep-accent); color: var(--nep-on-accent); border: 2px solid var(--nep-accent);
+    }
+    .skip-link:focus { left: 0.75rem; outline: none; }
+
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--nep-accent) 35%, transparent);
+    }
+
+    .scroll-progress {
+      position: fixed; top: 0; left: 0; z-index: 250; height: 2px; width: 0%;
+      background: var(--nep-accent); pointer-events: none; transition: width 0.08s linear;
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    .reveal-stagger > * {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal-stagger.is-visible > * { opacity: 1; transform: translateY(0); }
+    .reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0s; }
+    .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.06s; }
+    .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.12s; }
+    .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.18s; }
+    .reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.24s; }
+    .reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.3s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal, .reveal-stagger > * { opacity: 1; transform: none; transition: none; }
+      .nep-backdrop::after { animation: none !important; }
+      .explorer-panel-body { transition: none !important; }
+      .scroll-progress { transition: none; }
+      .stamp, .pillar:hover .stamp { transform: rotate(-12deg) !important; transition: none !important; }
+      .nep-section.is-scanning::before { animation: none !important; opacity: 0 !important; }
+      .ledger-meta::after { animation: none !important; opacity: 0 !important; }
+    }
+    :root,
+    html.dark {
+      --nep-accent: #1d4ed8;
+      --nep-accent-bright: #2563eb;
+      --nep-on-accent: #ffffff;
+      --nep-bg: #0a0e1c;
+      --nep-bg-elevated: #10182e;
+      --nep-surface: rgba(22, 30, 52, 0.72);
+      --nep-glass: rgba(30, 41, 72, 0.55);
+      --nep-border: color-mix(in srgb, var(--nep-accent) 22%, rgba(148, 163, 184, 0.18));
+      --app-glass-bg: var(--nep-glass);
+      --app-border: var(--nep-border);
+      --ambient-royal: rgba(29, 78, 216, 0.28);
+      --nep-fg: #eef2ff;
+      --nep-fg-muted: rgba(226, 232, 240, 0.78);
+      --nep-fg-subtle: rgba(148, 163, 184, 0.72);
+      --grid-line: rgba(29, 78, 216, 0.18);
+      --stamp: #3b82f6;
+      --nep-error: #dc2626;
+      --nep-error-fg: #f87171;
+      --nep-error-bg: color-mix(in srgb, var(--nep-error) 12%, transparent);
+      --nep-success: #16a34a;
+      --nep-success-fg: #4ade80;
+      --nep-success-bg: color-mix(in srgb, var(--nep-success) 12%, transparent);
+      --nep-header-shadow: 0 4px 24px rgba(0, 0, 0, 0.28), 0 0 0 1px color-mix(in srgb, var(--nep-accent) 12%, transparent);
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Inter', system-ui, sans-serif;
+      --radius: 0;
+      --omni-h: 4rem;
+      --container: min(92rem, 100% - 2rem);
+    }
+    html.light {
+      --nep-accent-bright: #1d4ed8;
+      --nep-bg: #eef2fb;
+      --nep-bg-elevated: #ffffff;
+      --nep-surface: rgba(255, 255, 255, 0.94);
+      --nep-glass: rgba(255, 255, 255, 0.88);
+      --nep-border: color-mix(in srgb, var(--nep-accent) 16%, #cbd5e1);
+      --app-glass-bg: var(--nep-glass);
+      --app-border: var(--nep-border);
+      --ambient-royal: rgba(29, 78, 216, 0.1);
+      --nep-fg: #0f172a;
+      --nep-fg-muted: #475569;
+      --nep-fg-subtle: #64748b;
+      --grid-line: rgba(29, 78, 216, 0.12);
+      --stamp: #1e3a8a;
+      --nep-error-fg: #b91c1c;
+      --nep-success-fg: #15803d;
+      --nep-header-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--nep-bg);
+      color: var(--nep-fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-width: 0;
+    }
+    @media (min-width: 1024px) {
+      body { padding-top: var(--omni-h); }
+    }
+    a { color: inherit; text-decoration: none; }
+    input, select, textarea { font: inherit; }
+    ul { list-style: none; }
+
+    .nep-v2-scope {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .nep-backdrop {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 55% at 15% -5%, var(--ambient-royal), transparent 55%),
+        radial-gradient(ellipse 60% 45% at 85% 15%, color-mix(in srgb, var(--nep-accent-bright) 14%, transparent), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 100%, color-mix(in srgb, var(--nep-accent) 12%, transparent), transparent 45%),
+        var(--nep-bg);
+    }
+    html.light .nep-backdrop::after { opacity: 0.32; }
+    .nep-backdrop::after {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.45;
+      mask-image: radial-gradient(ellipse 90% 80% at 50% 20%, black 20%, transparent 75%);
+      animation: backdrop-grid-drift 24s linear infinite;
+    }
+    @keyframes backdrop-grid-drift {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 0 48px, 48px 0; }
+    }
+
+    section.nep-section.is-scanning::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        color-mix(in srgb, var(--nep-accent) 22%, transparent) 48%,
+        transparent 100%
+      );
+      background-size: 100% 96px;
+      animation: section-grid-scan 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes section-grid-scan {
+      0% { background-position: 0 -96px; opacity: 0.7; }
+      100% { background-position: 0 120%; opacity: 0; }
+    }
+
+    .omni-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--omni-h);
+      z-index: 200; display: flex; align-items: center; gap: 1rem;
+      padding: 0 1rem; border-bottom: 2px solid var(--nep-border);
+      background: color-mix(in srgb, var(--nep-bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+    }
+    .omni-bar__burger {
+      width: 2.75rem; height: 2.75rem; border: 2px solid var(--nep-border);
+      background: var(--nep-bg-elevated); cursor: pointer; font-size: 1.25rem;
+      display: grid; place-items: center; color: var(--nep-fg);
+    }
+    .omni-bar__label {
+      font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--nep-fg-subtle);
+    }
+    .omni-bar__zones { margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .omni-bar__zone {
+      font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 0.35rem 0.6rem; border: 1px solid var(--nep-border);
+      color: var(--nep-fg-subtle);
+    }
+    .omni-bar__zone.is-active {
+      border-color: var(--nep-accent); color: var(--nep-accent-bright);
+      background: color-mix(in srgb, var(--nep-accent) 10%, transparent);
+    }
+
+    .prototype-badge {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 150;
+      font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.5rem 0.75rem;
+      border: 2px solid color-mix(in srgb, var(--nep-accent) 45%, var(--nep-border));
+      background: color-mix(in srgb, var(--nep-bg) 72%, transparent);
+      color: color-mix(in srgb, var(--nep-accent-bright) 65%, var(--nep-fg-subtle));
+      backdrop-filter: blur(8px); opacity: 0.55; cursor: default;
+      transition: opacity 0.25s, color 0.25s, border-color 0.25s;
+    }
+    .prototype-badge:hover {
+      opacity: 1; color: var(--nep-accent-bright);
+      border-color: var(--nep-accent);
+    }
+
+    .nep-container { width: var(--container); margin-inline: auto; padding-inline: 1rem; position: relative; z-index: 1; }
+    .nep-page-wrap { position: relative; overflow-x: hidden; }
+    section.nep-section {
+      padding: clamp(3rem, 6vw, 5rem) 0; border-bottom: 1px solid var(--nep-border);
+      position: relative; z-index: 1; overflow: hidden;
+    }
+    section.nep-section > .nep-container { position: relative; z-index: 1; }
+
+    .section-index {
+      font-family: var(--mono); font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+      font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--nep-accent-bright); display: block; margin-bottom: 1rem;
+    }
+    .section-title { font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; }
+    .section-lead { margin-top: 0.75rem; max-width: 52ch; color: var(--nep-fg-muted); font-size: 0.95rem; }
+    .section-hint {
+      margin-top: 0.5rem; font-size: 0.85rem; color: var(--nep-fg-subtle);
+      font-style: italic; font-weight: 400;
+    }
+    .section-header { margin-bottom: 2.5rem; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end; }
+    .section-header-rule { width: 120px; height: 3px; background: var(--nep-accent); }
+
+    .stamp {
+      position: absolute; top: 12px; right: 12px; width: 56px; height: 56px;
+      display: grid; place-items: center; transform: rotate(-12deg); opacity: 0.88;
+      pointer-events: none; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      color: var(--stamp);
+    }
+    html.light .stamp {
+      opacity: 1;
+      color: var(--stamp);
+      filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.65));
+    }
+    .pillar:hover .stamp,
+    .news-card:hover .stamp {
+      transform: rotate(-4deg) scale(1.05);
+    }
+    .stamp-svg { width: 56px; height: 56px; display: block; }
+    .stamp-inner {
+      font-family: var(--mono); font-size: 0.45rem; font-weight: 600; text-align: center;
+      line-height: 1.2; color: var(--stamp); letter-spacing: 0.06em;
+    }
+    .stamp--text {
+      border: 2px solid var(--stamp); border-radius: 50%; position: absolute;
+    }
+    .stamp--text::before {
+      content: ''; position: absolute; inset: 4px; border: 1px dashed var(--stamp);
+      border-radius: 50%; opacity: 0.6;
+    }
+
+    .nep-btn-primary, .nep-btn-ghost, .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.875rem 1.5rem; font-family: var(--mono); font-size: 0.72rem;
+      font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      border: 2px solid transparent; cursor: pointer; border-radius: var(--radius);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .nep-btn-primary, .btn-primary {
+      background: var(--nep-accent); border-color: var(--nep-accent); color: var(--nep-on-accent);
+    }
+    .nep-btn-primary:hover, .btn-primary:hover { background: var(--nep-accent-bright); border-color: var(--nep-accent-bright); }
+    .nep-btn-primary:active, .btn-primary:active { transform: translateY(0) scale(0.98); }
+    .nep-btn-ghost, .btn-ghost {
+      background: transparent; border-color: var(--nep-border); color: var(--nep-fg);
+    }
+    .nep-btn-ghost:hover, .btn-ghost:hover { border-color: var(--nep-accent); color: var(--nep-accent-bright); }
+
+    .nep-pillar-card, .nep-panel, .panel,
+    .explorer-tab, .explorer-panel, .pillar, .news-card, .stat, .partner,
+    .calc-form, .calc-result, .lead-info, .lead-form-wrap {
+      color: var(--nep-fg);
+    }
+    .nep-pillar-card, .nep-panel, .panel {
+      border-radius: var(--radius); border: 1px solid var(--nep-border);
+      background: var(--nep-glass); backdrop-filter: blur(14px);
+      position: relative;
+    }
+    .panel-heavy { border-width: 2px; border-color: color-mix(in srgb, var(--nep-accent) 25%, var(--nep-border)); }
+    .nep-panel-body, .panel-body { padding: 1.5rem 2rem; }
+    .nep-field, .form-group select, .form-group input, .form-group textarea {
+      width: 100%; padding: 0.75rem 1rem;
+      background: color-mix(in srgb, var(--nep-bg-elevated) 88%, transparent);
+      border: 1px solid var(--nep-border); color: var(--nep-fg); border-radius: var(--radius);
+    }
+    .nep-field:focus, .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--nep-accent);
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block; font-family: var(--mono); font-size: 0.65rem;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--nep-fg-subtle); margin-bottom: 0.5rem;
+    }
+    .nep-field::placeholder,
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--nep-fg-subtle);
+      opacity: 1;
+    }
+    .form-group select option {
+      background: var(--nep-bg-elevated);
+      color: var(--nep-fg);
+    }
+    html.light .explorer-tab.is-active {
+      background: color-mix(in srgb, var(--nep-accent) 8%, var(--nep-bg-elevated));
+    }
+    html.light .stamp,
+    html.light .stamp-inner,
+    html.light .stamp-svg,
+    html.light .section-index,
+    html.light .explorer-tab-code,
+    html.light .explorer-tab-num,
+    html.light .pillar-code {
+      color: var(--stamp);
+    }
+    html.light .stamp--text {
+      border-color: var(--stamp);
+    }
+    html.light .stamp--text::before {
+      border-color: var(--stamp);
+      opacity: 0.75;
+    }
+
+    .nep-header {
+      position: sticky; top: var(--omni-h); z-index: 100;
+      background: color-mix(in srgb, var(--nep-bg) 88%, transparent);
+      backdrop-filter: blur(12px); border-bottom: 2px solid var(--nep-border);
+      transition: background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s;
+    }
+    .nep-header.is-scrolled {
+      background: color-mix(in srgb, var(--nep-bg) 94%, transparent);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--nep-header-shadow);
+    }
+    .nep-header-grid {
+      display: grid; grid-template-columns: auto 1fr auto; align-items: stretch; min-height: 64px;
+    }
+    .nep-header-brand {
+      display: flex; align-items: center; gap: 1rem; padding: 0 1.25rem; border-right: 1px solid var(--nep-border);
+    }
+    .nep-header-logo { font-weight: 900; font-size: 1.1rem; letter-spacing: -0.02em; }
+    .nep-header-logo span { color: var(--nep-accent-bright); }
+    .nep-header-expansion {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em;
+      color: var(--nep-fg-subtle); display: none;
+    }
+    .nep-header-nav { display: flex; align-items: stretch; }
+    .nep-header-nav a {
+      display: flex; align-items: center; padding: 0 1rem; font-family: var(--mono);
+      font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+      border-right: 1px solid var(--nep-border); color: var(--nep-fg-muted);
+      transition: color 0.2s, background 0.2s;
+    }
+    .nep-header-nav a:hover { color: var(--nep-fg); background: color-mix(in srgb, var(--nep-accent) 8%, transparent); }
+    .nep-header-actions {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      align-items: stretch;
+      gap: 0;
+    }
+    .nep-header-actions .btn { border-radius: 0; height: 100%; border-top: none; border-bottom: none; border-right: none; }
+    .icon-btn {
+      border-left: 1px solid var(--nep-border);
+      min-width: 2.75rem;
+      padding: 0 0.75rem;
+      background: none;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--nep-fg-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #themeToggle { font-size: 1rem; line-height: 1; }
+    .lang-toggle-xs-hide { display: inline-flex; }
+    .menu-toggle {
+      display: none; background: none; border: none; border-left: 1px solid var(--nep-border);
+      padding: 0 1rem; cursor: pointer; color: var(--nep-fg);
+    }
+    .menu-toggle span { display: block; width: 20px; height: 2px; background: currentColor; margin: 4px 0; }
+
+    .hero { padding: clamp(3rem, 8vw, 5rem) 0 clamp(2.5rem, 6vw, 4rem); border-bottom: 2px solid var(--nep-border); }
+    .hero-eyebrow {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--nep-fg-subtle); margin-bottom: 1rem;
+    }
+    .hero-title { font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 0.95; }
+    .hero-title .sub { display: block; font-size: 0.42em; font-weight: 500; letter-spacing: 0.06em; color: var(--nep-fg-muted); margin-top: 0.75rem; opacity: 0.85; }
+    .hero-tagline { margin-top: 1.5rem; font-size: clamp(1rem, 2vw, 1.15rem); color: var(--nep-fg-muted); max-width: 46ch; border-left: 3px solid var(--nep-accent); padding-left: 1.25rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+
+    .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 2px solid var(--nep-border); min-width: 0; width: 100%; max-width: 100%; overflow: hidden; }
+    .pillar {
+      padding: 2rem 1.5rem; border-right: 1px solid var(--nep-border); position: relative;
+      transition: background 0.25s; min-width: 0;
+    }
+    .pillar::after {
+      content: '→'; position: absolute; right: 1.25rem; bottom: 1.75rem;
+      font-family: var(--mono); font-size: 0.85rem; color: var(--nep-accent-bright);
+      opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .pillar:hover::after { opacity: 1; transform: translateX(3px); }
+    .pillar:last-child { border-right: none; }
+    .pillar:hover { background: color-mix(in srgb, var(--nep-accent) 6%, transparent); }
+    .pillar-code { font-family: var(--mono); font-size: 0.65rem; color: var(--nep-accent-bright); letter-spacing: 0.1em; text-transform: uppercase; }
+    .pillar-title { font-size: 1.35rem; font-weight: 800; margin-top: 0.5rem; letter-spacing: -0.02em; }
+    .pillar-desc { margin-top: 0.75rem; font-size: 0.875rem; color: var(--nep-fg-muted); line-height: 1.55; }
+    .pillar-divider { width: 40px; height: 2px; background: var(--nep-accent); margin-top: 1.25rem; }
+
+    .explorer { display: grid; gap: 1.5rem; min-width: 0; }
+    @media (min-width: 1024px) { .explorer { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+    .explorer-list { display: grid; gap: 0.5rem; min-width: 0; }
+    .explorer-tab {
+      text-align: left; width: 100%; padding: 1rem 1.25rem; cursor: pointer;
+      border: 1px solid var(--nep-border); background: var(--nep-glass);
+      color: var(--nep-fg);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      min-width: 0;
+    }
+    .explorer-tab.is-active {
+      border-color: color-mix(in srgb, var(--nep-accent) 55%, var(--nep-border));
+      background: color-mix(in srgb, var(--nep-accent) 10%, var(--nep-glass));
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--nep-accent) 25%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--nep-accent) 55%, transparent);
+    }
+    .explorer-tab-code { font-family: var(--mono); font-size: 0.62rem; color: var(--nep-accent-bright); letter-spacing: 0.1em; }
+    .explorer-tab-title { display: block; margin-top: 0.35rem; font-weight: 700; font-size: 0.95rem; color: var(--nep-fg); }
+    .explorer-tab-num { font-family: var(--mono); font-size: 1.25rem; font-weight: 600; color: var(--nep-accent-bright); }
+    .explorer-panel { min-height: 220px; border: 2px solid var(--nep-border); }
+    .explorer-panel-body {
+      opacity: 1;
+      transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .explorer-panel-body.is-fading { opacity: 0; transform: translateY(-6px); }
+    .ledger-meta::after {
+      content: '▋'; margin-left: 0.15em; color: var(--nep-accent-bright);
+      animation: cursor-blink 1.05s step-end infinite;
+    }
+    @keyframes cursor-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .explorer-panel-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+    .explorer-panel-desc { margin-top: 1rem; font-size: 0.9rem; color: var(--nep-fg-muted); line-height: 1.65; }
+    .explorer-panel-meta { font-family: var(--mono); font-size: 0.62rem; color: var(--nep-fg-subtle); margin-top: 1rem; letter-spacing: 0.08em; }
+    .explorer-panel-cta { margin-top: 1.5rem; }
+
+    .process-shell { position: relative; overflow: hidden; }
+
+    .process-progress {
+      position: absolute; top: 0; left: 0; height: 3px; width: 33.33%;
+      background: var(--nep-accent); transition: width 0.3s;
+    }
+    .process-detail-panel {
+      margin-top: 1.5rem; padding: 1.5rem;
+      border: 1px solid var(--nep-border);
+      background: color-mix(in srgb, var(--nep-accent) 5%, var(--nep-glass));
+      min-height: 140px; position: relative; color: var(--nep-fg);
+    }
+
+    .calc-layout { display: grid; gap: 0; border: 2px solid var(--nep-border); min-width: 0; max-width: 100%; }
+    @media (min-width: 768px) { .calc-layout { grid-template-columns: 1fr 1fr; } }
+    .calc-form { padding: 2rem; border-bottom: 1px solid var(--nep-border); }
+    @media (min-width: 768px) { .calc-form { border-bottom: none; border-right: 1px solid var(--nep-border); } }
+    .calc-result { padding: 2rem; background: var(--nep-bg-elevated); display: flex; flex-direction: column; justify-content: center; }
+    .calc-total-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--nep-fg-subtle); }
+    .calc-total { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; color: var(--nep-accent-bright); letter-spacing: -0.03em; margin-top: 0.5rem; }
+    .calc-disclaimer { margin-top: 1.5rem; font-size: 0.72rem; color: var(--nep-fg-subtle); line-height: 1.5; border-top: 1px solid var(--nep-border); padding-top: 1rem; }
+
+    .news-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 2rem; }
+    .news-link-all { font-family: var(--mono); font-size: 0.68rem; color: var(--nep-accent-bright); letter-spacing: 0.08em; }
+    .news-grid { display: grid; gap: 1px; background: var(--nep-border); border: 2px solid var(--nep-border); min-width: 0; max-width: 100%; }
+    @media (min-width: 768px) { .news-grid { grid-template-columns: repeat(3, 1fr); } }
+    .news-card {
+      background: var(--nep-glass); padding: 1.5rem; position: relative; min-height: 200px;
+      display: flex; flex-direction: column;
+      transition: background 0.2s, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .news-card:hover { background: var(--nep-bg-elevated); transform: translateY(-2px); }
+    .news-date { font-family: var(--mono); font-size: 0.62rem; color: var(--nep-fg-subtle); letter-spacing: 0.08em; }
+    .news-title {
+      font-weight: 700; font-size: 1rem; margin-top: 0.75rem; line-height: 1.35; flex: 1;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      transition: color 0.2s;
+      text-decoration: underline transparent; text-underline-offset: 3px;
+    }
+    .news-card:hover .news-title {
+      color: var(--nep-accent-bright);
+      text-decoration-color: color-mix(in srgb, var(--nep-accent) 65%, transparent);
+    }
+    .news-excerpt {
+      font-size: 0.8rem; color: var(--nep-fg-muted); margin-top: 0.75rem; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .stats-grid { display: grid; gap: 0; border: 2px solid var(--nep-border); min-width: 0; max-width: 100%; }
+    @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat { padding: 2rem 1.5rem; text-align: center; border-right: 1px solid var(--nep-border); border-bottom: 1px solid var(--nep-border); position: relative; }
+    .stat-value {
+      font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.03em;
+      color: var(--nep-accent-bright); line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .stat-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--nep-fg-subtle); margin-top: 0.75rem; }
+
+    .partners-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--nep-border); border: 2px solid var(--nep-border); min-width: 0; max-width: 100%; }
+    .partner {
+      background: var(--nep-glass); aspect-ratio: 2/1; display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      color: var(--nep-fg-subtle); opacity: 0.5;
+      transition: background 0.2s, color 0.2s, opacity 0.25s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .partner:hover {
+      background: var(--nep-bg-elevated); color: var(--nep-fg-muted);
+      opacity: 0.85; transform: scale(1.02);
+    }
+
+    .lead-grid { display: grid; gap: 0; border: 2px solid var(--nep-border); min-width: 0; max-width: 100%; }
+    @media (min-width: 1024px) { .lead-grid { grid-template-columns: 5fr 7fr; } }
+    .lead-info { padding: 2.5rem 2rem; border-bottom: 1px solid var(--nep-border); background: var(--nep-bg-elevated); }
+    @media (min-width: 1024px) { .lead-info { border-bottom: none; border-right: 1px solid var(--nep-border); } }
+    .lead-form-wrap { padding: 2.5rem 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-consent { margin-top: 1rem; font-size: 0.72rem; color: var(--nep-fg-subtle); }
+    .form-consent a { color: var(--nep-accent-bright); text-decoration: underline; }
+
+    .calc-form-title { font-weight: 700; margin-bottom: 1.25rem; }
+    .lead-info-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    .lead-info-desc { margin-top: 1rem; font-size: 0.9rem; color: var(--nep-fg-muted); line-height: 1.6; }
+    .footer-copy-note { margin-top: 0.75rem; }
+
+    .form-error {
+      display: none; margin-bottom: 1rem; padding: 0.75rem 1rem;
+      border: 1px solid var(--nep-error); background: var(--nep-error-bg);
+      font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; color: var(--nep-error-fg);
+    }
+    .form-error.is-visible { display: block; }
+    .nep-field.is-invalid, .form-group select.is-invalid, .form-group input.is-invalid {
+      border-color: var(--nep-error);
+      animation: field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+    @keyframes field-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .lead-success {
+      display: none; padding: 1.25rem; border: 2px solid var(--nep-success);
+      background: var(--nep-success-bg);
+      font-size: 0.9rem; color: var(--nep-success-fg); line-height: 1.55;
+    }
+    .lead-success.is-visible { display: block; }
+    .is-hidden { display: none !important; }
+
+    .nep-footer { background: color-mix(in srgb, var(--nep-bg-elevated) 80%, var(--nep-bg)); border-top: 2px solid var(--nep-border); padding: 3rem 0 0; position: relative; z-index: 1; }
+    .footer-grid { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--nep-border); }
+    @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } }
+    .footer-col h4 { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--nep-fg-subtle); margin-bottom: 1rem; }
+    .footer-col li { margin-bottom: 0.5rem; }
+    .footer-col a { font-size: 0.85rem; color: var(--nep-fg-muted); transition: color 0.2s; }
+    .footer-col a:hover { color: var(--nep-fg); }
+    .footer-copy { font-size: 0.85rem; color: var(--nep-fg-subtle); line-height: 1.55; }
+    .footer-bottom {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      gap: 0.75rem 1rem; padding: 1.25rem 0;
+      font-family: var(--mono); font-size: 0.62rem; color: var(--nep-fg-subtle); letter-spacing: 0.04em;
+      min-width: 0;
+    }
+    .footer-bottom > span { min-width: 0; overflow-wrap: anywhere; }
+    .footer-code {
+      color: var(--nep-accent-bright);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .fade-hidden { opacity: 0; pointer-events: none; position: absolute; }
+
+    @media (min-width: 900px) { .nep-header-expansion { display: block; } }
+    @media (min-width: 1024px) {
+      .nep-header-nav .header-cta { display: none; }
+    }
+
+    @media (max-width: 1023px) {
+      .partners-grid { grid-template-columns: repeat(3, 1fr); }
+      .nep-backdrop::after { background-size: 32px 32px; opacity: 0.32; }
+      header nav.nep-header-nav.is-open,
+      .nep-header .nep-header-nav.is-open,
+      [id="mainNav"].is-open {
+        display: flex !important; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0;
+        z-index: 150;
+        background: var(--nep-bg-elevated); border-bottom: 2px solid var(--nep-border);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+      }
+      header nav.nep-header-nav.is-open a,
+      [id="mainNav"].is-open a { border-right: none; border-bottom: 1px solid var(--nep-border); padding: 1rem 1.25rem; color: var(--nep-fg); }
+      header nav.nep-header-nav.is-open a.header-cta,
+      [id="mainNav"].is-open a.header-cta {
+        display: flex !important; border-color: var(--nep-accent);
+        color: var(--nep-on-accent); background: var(--nep-accent); font-weight: 600;
+      }
+      .nep-header-grid { grid-template-columns: minmax(0, 1fr) auto; position: relative; min-width: 0; }
+      .nep-header-brand { border-right: none; min-width: 0; }
+      .nep-header-actions { flex-shrink: 0; }
+    }
+    @media (max-width: 767px) {
+      .form-row { grid-template-columns: 1fr; }
+      .partners-grid { grid-template-columns: repeat(2, 1fr); }
+      .section-header { grid-template-columns: 1fr; }
+      .hero-actions .btn { width: 100%; }
+      .omni-bar__zones { display: none; }
+      .hero-title { font-size: clamp(1.75rem, 8vw, 2.75rem); }
+      .lang-toggle-xs-hide { display: none !important; }
+      .icon-btn { min-width: 2.5rem; padding-inline: 0.5rem; }
+      .pillar { border-right: none; border-bottom: 1px solid var(--nep-border); }
+      .pillar:last-child { border-bottom: none; }
+    }
+    @media (max-width: 480px) {
+      .footer-code { white-space: normal; }
+    }
+  </style>
+  <link rel="stylesheet" href="../_shared/proto-fixes.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <div class="nep-v2-scope">
+  <div class="omni-bar" role="banner" aria-label="Omni-Bar">
+    <button type="button" class="omni-bar__burger" id="omniBurger" aria-label="Меню зон" title="Меню платформы EXITA">☰</button>
+    <span class="omni-bar__label">EXITA · Navigator</span>
+    <div class="omni-bar__zones">
+      <span class="omni-bar__zone">Concierge</span>
+      <span class="omni-bar__zone">Global</span>
+      <span class="omni-bar__zone is-active">Н.Э.П.</span>
+      <span class="omni-bar__zone">РАИС</span>
+    </div>
+  </div>
+
+  <div class="nep-backdrop" aria-hidden="true"></div>
+  <div class="prototype-badge" title="HTML-прототип · без backend">Прототип 02 · Architectural Ledger × NEP v2</div>
+  <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+  <header class="nep-header" id="nepHeader">
+    <div class="nep-header-grid nep-container">
+      <div class="nep-header-brand">
+        <div>
+          <div class="nep-header-logo">EXITA <span>Н.Э.П.</span></div>
+          <div class="nep-header-expansion">Наука · Экономика · Право</div>
+        </div>
+      </div>
+      <nav class="nep-header-nav" id="mainNav" aria-label="Основное меню">
+        <a href="#services">Экспертиза</a>
+        <a href="#services">Оценка</a>
+        <a href="#services">Консалтинг</a>
+        <a href="#services">Юридические</a>
+        <a href="#">Эксперты</a>
+        <a href="#news">Новости</a>
+        <a href="#nep-lead-form" class="header-cta">Оставить заявку</a>
+      </nav>
+      <div class="nep-header-actions">
+        <button type="button" class="icon-btn" id="themeToggle" aria-label="Переключить тему">☾</button>
+        <button type="button" class="icon-btn lang-toggle-xs-hide" id="langToggle" aria-label="Язык">RU</button>
+        <a href="#nep-lead-form" class="btn btn-primary header-cta">Оставить заявку</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Меню" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="nep-page-wrap" id="main" tabindex="-1">
+
+    <section class="hero nep-section" id="hero">
+      <div class="nep-container">
+        <span class="section-index">/SECTION_01</span>
+        <p class="hero-eyebrow">Наука · Экономика · Право</p>
+        <h1 class="hero-title">EXITA Н.Э.П.<span class="sub">Наука · Экономика · Право</span></h1>
+        <p class="hero-tagline">Независимая экспертная платформа на стыке науки, экономики и права</p>
+        <div class="hero-actions">
+          <a href="#nep-lead-form" class="btn btn-primary">Получить консультацию</a>
+          <a href="#" class="btn btn-ghost">Подобрать эксперта</a>
+          <a href="#calculator" class="btn btn-ghost">Рассчитать стоимость</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="pillars">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_02</span>
+            <h2 class="section-title">Три столпа платформы</h2>
+          </div>
+          <div class="section-header-rule" aria-hidden="true"></div>
+        </header>
+        <div class="pillars-grid reveal-stagger">
+          <a href="#" class="pillar panel">
+            <div class="stamp" aria-hidden="true">
+              <svg class="stamp-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="28" cy="28" r="25" stroke="currentColor" stroke-width="2"/>
+                <circle cx="28" cy="28" r="19" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 2.5" opacity="0.55"/>
+                <path d="M19 28.5 L25.5 35 L37.5 22.5" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+                <text x="28" y="17" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4.5" font-weight="600" fill="currentColor">NEP</text>
+                <text x="28" y="44" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4" font-weight="500" fill="currentColor" opacity="0.9">VERIFIED</text>
+              </svg>
+            </div>
+            <span class="pillar-code">PILLAR·01</span>
+            <h3 class="pillar-title">Наука</h3>
+            <p class="pillar-desc">Академическая экспертиза и исследования для обоснованных решений</p>
+            <div class="pillar-divider"></div>
+          </a>
+          <a href="#" class="pillar panel">
+            <div class="stamp" aria-hidden="true">
+              <svg class="stamp-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="28" cy="28" r="25" stroke="currentColor" stroke-width="2"/>
+                <circle cx="28" cy="28" r="19" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 2.5" opacity="0.55"/>
+                <path d="M19 28.5 L25.5 35 L37.5 22.5" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+                <text x="28" y="17" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4.5" font-weight="600" fill="currentColor">NEP</text>
+                <text x="28" y="44" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4" font-weight="500" fill="currentColor" opacity="0.9">VERIFIED</text>
+              </svg>
+            </div>
+            <span class="pillar-code">PILLAR·02</span>
+            <h3 class="pillar-title">Экономика</h3>
+            <p class="pillar-desc">Оценка, финансовый анализ и консалтинг для роста бизнеса</p>
+            <div class="pillar-divider"></div>
+          </a>
+          <a href="#" class="pillar panel">
+            <div class="stamp" aria-hidden="true">
+              <svg class="stamp-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="28" cy="28" r="25" stroke="currentColor" stroke-width="2"/>
+                <circle cx="28" cy="28" r="19" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 2.5" opacity="0.55"/>
+                <path d="M19 28.5 L25.5 35 L37.5 22.5" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+                <text x="28" y="17" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4.5" font-weight="600" fill="currentColor">NEP</text>
+                <text x="28" y="44" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="4" font-weight="500" fill="currentColor" opacity="0.9">VERIFIED</text>
+              </svg>
+            </div>
+            <span class="pillar-code">PILLAR·03</span>
+            <h3 class="pillar-title">Право</h3>
+            <p class="pillar-desc">Правовое сопровождение и экспертиза для защиты интересов</p>
+            <div class="pillar-divider"></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="services">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_03</span>
+            <h2 class="section-title">Направления платформы</h2>
+            <p class="section-hint">Нажмите на пункт — описание откроется рядом</p>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="explorer reveal" data-explorer="services">
+          <div class="explorer-list proto-explorer-tabs" role="tablist" aria-label="Направления платформы">
+            <button type="button" class="explorer-tab is-active" role="tab" id="tab-services-expertise" aria-selected="true" aria-controls="panel-services" data-id="expertise">
+              <span class="explorer-tab-code">NEP·02</span>
+              <span class="explorer-tab-title">Экспертиза</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-services-valuation" aria-selected="false" aria-controls="panel-services" data-id="valuation">
+              <span class="explorer-tab-code">NEP·05</span>
+              <span class="explorer-tab-title">Оценка</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-services-consulting" aria-selected="false" aria-controls="panel-services" data-id="consulting">
+              <span class="explorer-tab-code">NEP·03</span>
+              <span class="explorer-tab-title">Консалтинг</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-services-legal" aria-selected="false" aria-controls="panel-services" data-id="legal">
+              <span class="explorer-tab-code">NEP·04</span>
+              <span class="explorer-tab-title">Юридические вопросы</span>
+            </button>
+          </div>
+          <div class="explorer-panel nep-panel panel-heavy" role="tabpanel" id="panel-services" aria-labelledby="tab-services-expertise">
+            <div class="stamp stamp--text" aria-hidden="true"><div class="stamp-inner">DOC<br>NEP</div></div>
+            <div class="panel-body explorer-panel-body" id="servicesPanel">
+              <span class="explorer-tab-code" id="servicesCode">NEP·02</span>
+              <h3 class="explorer-panel-title" id="servicesTitle">Экспертиза</h3>
+              <p class="explorer-panel-desc" id="servicesDesc">Платформа для создания экспертных заключений от кандидатов и докторов наук. Подготовка научно-обоснованных бизнес-экспертиз от ведущих специалистов</p>
+              <a href="#" class="btn btn-primary explorer-panel-cta">Подробнее</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="expertise">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_04</span>
+            <h2 class="section-title">Области экспертизы</h2>
+            <p class="section-hint">Выберите направление, чтобы увидеть описание</p>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="explorer reveal" data-explorer="expertise">
+          <div class="explorer-list proto-explorer-tabs" role="tablist" aria-label="Области экспертизы">
+            <button type="button" class="explorer-tab is-active" role="tab" id="tab-expertise-e1" aria-selected="true" aria-controls="panel-expertise" data-id="e1">
+              <span class="explorer-tab-code">01</span>
+              <span class="explorer-tab-title">Экономика и финансы бизнеса</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-expertise-e2" aria-selected="false" aria-controls="panel-expertise" data-id="e2">
+              <span class="explorer-tab-code">02</span>
+              <span class="explorer-tab-title">Правовая поддержка и судебная экспертиза</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-expertise-e3" aria-selected="false" aria-controls="panel-expertise" data-id="e3">
+              <span class="explorer-tab-code">03</span>
+              <span class="explorer-tab-title">Технологии, инновации и автоматизация</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-expertise-e4" aria-selected="false" aria-controls="panel-expertise" data-id="e4">
+              <span class="explorer-tab-code">04</span>
+              <span class="explorer-tab-title">Маркетинг, продвижение и рыночная экспертиза</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-expertise-e5" aria-selected="false" aria-controls="panel-expertise" data-id="e5">
+              <span class="explorer-tab-code">05</span>
+              <span class="explorer-tab-title">Социальные и гуманитарные исследования</span>
+            </button>
+          </div>
+          <div class="explorer-panel nep-panel panel-heavy" role="tabpanel" id="panel-expertise" aria-labelledby="tab-expertise-e1">
+            <div class="panel-body explorer-panel-body" id="expertisePanel">
+              <span class="explorer-tab-code" id="expertiseMeta">01</span>
+              <h3 class="explorer-panel-title" id="expertiseTitle">Экономика и финансы бизнеса</h3>
+              <p class="explorer-panel-desc" id="expertiseDesc">Экспертиза бизнес-планов, финансовых моделей и инвестиционных проектов. Глубокий анализ ключевых показателей, экспертная оценка экономической эффективности и рентабельности</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="advantages">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_05</span>
+            <h2 class="section-title">Преимущества экспертной платформы EXITA</h2>
+            <p class="section-hint">Нажмите карточку, чтобы прочитать подробнее</p>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="explorer reveal" data-explorer="advantages">
+          <div class="explorer-list proto-explorer-tabs" role="tablist" aria-label="Преимущества">
+            <button type="button" class="explorer-tab is-active" role="tab" id="tab-advantages-a1" aria-selected="true" aria-controls="panel-advantages" data-id="a1">
+              <span class="explorer-tab-num">1</span>
+              <span class="explorer-tab-title">Доступ к научному сообществу</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-advantages-a2" aria-selected="false" aria-controls="panel-advantages" data-id="a2">
+              <span class="explorer-tab-num">2</span>
+              <span class="explorer-tab-title">Качество и конфиденциальность</span>
+            </button>
+            <button type="button" class="explorer-tab" role="tab" id="tab-advantages-a3" aria-selected="false" aria-controls="panel-advantages" data-id="a3">
+              <span class="explorer-tab-num">3</span>
+              <span class="explorer-tab-title">Гибкость и персонализация</span>
+            </button>
+          </div>
+          <div class="explorer-panel nep-panel panel-heavy" role="tabpanel" id="panel-advantages" aria-labelledby="tab-advantages-a1">
+            <div class="stamp stamp--text" aria-hidden="true"><div class="stamp-inner">ADV<br>01</div></div>
+            <div class="panel-body explorer-panel-body" id="advantagesPanel">
+              <h3 class="explorer-panel-title" id="advantagesTitle">Доступ к научному сообществу</h3>
+              <p class="explorer-panel-desc" id="advantagesDesc">Компания EXITA объединяет научное и профессиональное сообщество экспертов – специалистов ведущих ВУЗов и НИИ – обеспечивая Вам прямой доступ к передовым знаниям и уникальным компетенциям</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="process">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_06</span>
+            <h2 class="section-title">Как происходит заказ экспертизы</h2>
+            <p class="section-hint">Выберите этап, чтобы увидеть детали процесса</p>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="explorer-panel nep-panel panel-heavy process-shell">
+          <div class="process-progress" id="processProgress"></div>
+          <div class="panel-body">
+            <div class="explorer reveal" data-explorer="process">
+              <div class="explorer-list proto-explorer-tabs" role="tablist" aria-label="Процесс">
+                <button type="button" class="explorer-tab is-active" role="tab" id="tab-process-p1" aria-selected="true" aria-controls="panel-process" data-id="p1">
+                  <span class="explorer-tab-num">01</span>
+                  <span class="explorer-tab-title">Заказать услугу</span>
+                </button>
+                <button type="button" class="explorer-tab" role="tab" id="tab-process-p2" aria-selected="false" aria-controls="panel-process" data-id="p2">
+                  <span class="explorer-tab-num">02</span>
+                  <span class="explorer-tab-title">Подобрать эксперта</span>
+                </button>
+                <button type="button" class="explorer-tab" role="tab" id="tab-process-p3" aria-selected="false" aria-controls="panel-process" data-id="p3">
+                  <span class="explorer-tab-num">03</span>
+                  <span class="explorer-tab-title">Получить результат</span>
+                </button>
+              </div>
+              <div class="explorer-panel-body process-detail-panel" id="panel-process" role="tabpanel" aria-labelledby="tab-process-p1">
+                <p class="explorer-panel-meta ledger-meta" id="processMeta">ENTRY·001 · 01 / 03</p>
+                <h3 class="explorer-panel-title" id="processTitle">Заказать услугу</h3>
+                <p class="explorer-panel-desc" id="processDesc">Опишите задачу или пришлите техническое задание (вопросы) для подбора формата сотрудничества</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="calculator">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_07</span>
+            <h2 class="section-title">Калькулятор расчета примерной стоимости</h2>
+            <p class="section-lead">Наш калькулятор поможет Вам быстро определить стоимость услуг, система автоматически произведет все необходимые расчеты</p>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="calc-layout panel-heavy nep-panel reveal">
+          <form class="calc-form" id="calcForm" novalidate>
+            <p class="form-error" id="calcError" role="alert">Пожалуйста, заполните все поля</p>
+            <h3 class="calc-form-title">Ввести данные:</h3>
+            <div class="form-group">
+              <label for="direction">Направление экспертизы</label>
+              <select id="direction" class="nep-field" required>
+                <option value="">Выбрать направление</option>
+                <option value="economics">Экономика и финансы бизнеса</option>
+                <option value="law">Правовая поддержка и судебная экспертиза</option>
+                <option value="tech">Технологии, инновации и автоматизация</option>
+                <option value="marketing">Маркетинг, продвижение и рыночная экспертиза</option>
+                <option value="social">Социальные и гуманитарные исследования</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="questions">Количество вопросов</label>
+              <select id="questions" class="nep-field" required>
+                <option value="">Выбрать кол-во вопросов</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pages">Количество страниц в вопросе</label>
+              <select id="pages" class="nep-field" required>
+                <option value="">По умолчанию</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Рассчитать примерную стоимость</button>
+          </form>
+          <div class="calc-result">
+            <div class="calc-total-label">Итоговый расчёт: · Общая стоимость:</div>
+            <div class="calc-total" id="calcTotal">— ₽</div>
+            <p class="calc-disclaimer">Калькулятор предоставляет ориентировочную стоимость. Финальная стоимость определяется после обработки ТЗ менеджером и экспертами. Результат расчета не является офертой.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="news">
+      <div class="nep-container">
+        <div class="news-head">
+          <div>
+            <span class="section-index">/SECTION_08</span>
+            <h2 class="section-title">Новости компании</h2>
+          </div>
+          <a href="#" class="news-link-all">Посмотреть все новости →</a>
+        </div>
+        <div class="news-grid reveal-stagger">
+          <article class="news-card">
+            <div class="stamp stamp--text" aria-hidden="true"><div class="stamp-inner">NEWS<br>042</div></div>
+            <time class="news-date" datetime="2025-04-15">15 апр 2025</time>
+            <h3 class="news-title">Расширение сети экспертов: новые направления судебной экспертизы</h3>
+            <p class="news-excerpt">Платформа Н.Э.П. пополнилась специалистами в области корпоративного права и оценочной экспертизы.</p>
+          </article>
+          <article class="news-card">
+            <div class="stamp stamp--text" aria-hidden="true"><div class="stamp-inner">NEWS<br>041</div></div>
+            <time class="news-date" datetime="2025-03-28">28 мар 2025</time>
+            <h3 class="news-title">Обновление калькулятора стоимости экспертизы</h3>
+            <p class="news-excerpt">Новые параметры расчёта учитывают объём материалов и сложность вопросов для более точной оценки.</p>
+          </article>
+          <article class="news-card">
+            <div class="stamp stamp--text" aria-hidden="true"><div class="stamp-inner">NEWS<br>040</div></div>
+            <time class="news-date" datetime="2025-02-10">10 фев 2025</time>
+            <h3 class="news-title">Партнёрство с ведущими ВУЗами: совместные исследования</h3>
+            <p class="news-excerpt">EXITA подписала соглашения о сотрудничестве с тремя федеральными университетами.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="stats">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_09</span>
+            <h2 class="section-title">Ключевые показатели нашей работы</h2>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="stats-grid reveal-stagger">
+          <div class="stat panel"><div class="stat-value" data-count="150" data-suffix="+">150+</div><div class="stat-label">Сделок в месяц</div></div>
+          <div class="stat panel"><div class="stat-value" data-count="200" data-suffix="+">200+</div><div class="stat-label">Профессиональных экспертов</div></div>
+          <div class="stat panel"><div class="stat-value" data-count="45">45</div><div class="stat-label">Рабочих групп</div></div>
+          <div class="stat panel"><div class="stat-value" data-count="30" data-suffix="+">30+</div><div class="stat-label">Партнеров</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="partners">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_10</span>
+            <h2 class="section-title">Наши партнёры</h2>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="partners-grid reveal-stagger">
+          <div class="partner">ВУЗ · 01</div><div class="partner">НИИ · 02</div><div class="partner">БАНК · 03</div>
+          <div class="partner">ЮР · 04</div><div class="partner">КОНС · 05</div><div class="partner">IT · 06</div>
+          <div class="partner">ВУЗ · 07</div><div class="partner">НИИ · 08</div><div class="partner">ФОНД · 09</div>
+          <div class="partner">АСС · 10</div><div class="partner">ВУЗ · 11</div><div class="partner">НИИ · 12</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nep-section" id="nep-lead-form">
+      <div class="nep-container">
+        <header class="section-header">
+          <div>
+            <span class="section-index">/SECTION_11</span>
+            <h2 class="section-title">Оставить заявку</h2>
+          </div>
+          <div class="section-header-rule"></div>
+        </header>
+        <div class="lead-grid panel-heavy nep-panel">
+          <div class="lead-info">
+            <h3 class="lead-info-title">Получить консультацию</h3>
+            <p class="lead-info-desc">Независимая экспертная платформа на стыке науки, экономики и права</p>
+          </div>
+          <div class="lead-form-wrap">
+            <div class="lead-success" id="leadSuccess" role="status">Заявка принята. Мы свяжемся с вами.</div>
+            <form id="leadForm" novalidate>
+              <div class="form-row">
+                <div class="form-group"><label for="name">Имя *</label><input type="text" id="name" name="name" class="nep-field" placeholder="Ваше имя" required></div>
+                <div class="form-group"><label for="email">Email *</label><input type="email" id="email" name="email" class="nep-field" placeholder="Email" required></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="phone">Телефон *</label><input type="tel" id="phone" name="phone" class="nep-field" placeholder="+7 (___) ___-__-__" required></div>
+                <div class="form-group"><label for="company">Компания</label><input type="text" id="company" name="company" class="nep-field" placeholder="Название компании"></div>
+              </div>
+              <div class="form-group">
+                <label for="area">Направление экспертизы</label>
+                <select id="area" name="area_of_expertise" class="nep-field">
+                  <option value="">Выбрать направление</option>
+                  <option value="economics">Экономика и финансы бизнеса</option>
+                  <option value="law">Правовая поддержка и судебная экспертиза</option>
+                  <option value="tech">Технологии, инновации и автоматизация</option>
+                  <option value="marketing">Маркетинг, продвижение и рыночная экспертиза</option>
+                  <option value="social">Социальные и гуманитарные исследования</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="description">Опишите задачу *</label>
+                <textarea id="description" name="description" class="nep-field" placeholder="Краткое описание задачи или проблемы" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Отправить заявку</button>
+              <p class="form-consent">Нажимая на кнопку «Отправить заявку», вы соглашаетесь с <a href="#">обработкой персональных данных</a>.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="nep-footer">
+    <div class="nep-container footer-grid">
+      <div class="footer-col">
+        <h4>Услуги</h4>
+        <ul>
+          <li><a href="#">Экспертиза</a></li>
+          <li><a href="#">Оценка</a></li>
+          <li><a href="#">Консалтинг</a></li>
+          <li><a href="#">Юридические вопросы</a></li>
+          <li><a href="#">Политика конфиденциальности</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Социальные сети</h4>
+        <ul>
+          <li><a href="https://vk.com/club229259060" target="_blank" rel="noopener noreferrer">Вконтакте</a></li>
+          <li><a href="https://t.me/s/exitahelp" target="_blank" rel="noopener noreferrer">Телеграм</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-copy">
+        <p>© EXITA - академическая экспертиза для бизнеса от ведущих ученых и экспертов</p>
+        <p class="footer-copy-note">© 2025 ООО EXITA Все права защищены</p>
+      </div>
+    </div>
+    <div class="nep-container footer-bottom">
+      <span>/SECTION_12 · NEP FOOTER</span>
+      <span class="footer-code">LEDGER·DOC·002</span>
+    </div>
+  </footer>
+  </div>
+
+  <script>
+    (function () {
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var nepHeader = document.getElementById('nepHeader');
+      function onScroll() {
+        var y = window.scrollY || document.documentElement.scrollTop;
+        if (nepHeader) nepHeader.classList.toggle('is-scrolled', y > 8);
+        var bar = document.getElementById('scrollProgress');
+        if (bar) {
+          var max = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      var menuToggle = document.getElementById('menuToggle');
+      var mainNav = document.getElementById('mainNav');
+      var navOverlay = document.getElementById('navOverlay');
+      function setMobileNav(open) {
+        if (!mainNav || !menuToggle) return;
+        mainNav.classList.toggle('is-open', open);
+        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        document.body.style.overflow = open ? 'hidden' : '';
+        if (navOverlay) {
+          navOverlay.classList.toggle('is-open', open);
+          navOverlay.setAttribute('aria-hidden', open ? 'false' : 'true');
+        }
+      }
+      if (menuToggle && mainNav) {
+        menuToggle.addEventListener('click', function () {
+          setMobileNav(!mainNav.classList.contains('is-open'));
+        });
+        if (navOverlay) {
+          navOverlay.addEventListener('click', function () { setMobileNav(false); });
+        }
+        mainNav.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () { setMobileNav(false); });
+        });
+      }
+
+      if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+        var revealIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            revealIo.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        document.querySelectorAll('.reveal, .reveal-stagger').forEach(function (el) {
+          revealIo.observe(el);
+        });
+
+        var scanIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-scanning');
+            setTimeout(function () { entry.target.classList.remove('is-scanning'); }, 1100);
+            scanIo.unobserve(entry.target);
+          });
+        }, { threshold: 0.2 });
+        document.querySelectorAll('section.nep-section').forEach(function (sec) {
+          scanIo.observe(sec);
+        });
+      } else {
+        document.querySelectorAll('.reveal, .reveal-stagger').forEach(function (el) {
+          el.classList.add('is-visible');
+        });
+      }
+
+      var langToggle = document.getElementById('langToggle');
+      if (langToggle) {
+        langToggle.addEventListener('click', function () {
+          langToggle.textContent = langToggle.textContent === 'RU' ? 'EN' : 'RU';
+        });
+      }
+
+      var DATA = {
+        services: {
+          expertise: { code: 'NEP·02', title: 'Экспертиза', desc: 'Платформа для создания экспертных заключений от кандидатов и докторов наук. Подготовка научно-обоснованных бизнес-экспертиз от ведущих специалистов' },
+          valuation: { code: 'NEP·05', title: 'Оценка', desc: 'Профессиональная оценка бизнес-показателей, рисков, стратегий и имущества. Биржа экспертизы обеспечивает научную точность и объективность при оценке любых активов и проектов' },
+          consulting: { code: 'NEP·03', title: 'Консалтинг', desc: 'Оказание консалтинговых услуг и бизнес-консультаций. Применение научных исследований и передового опыта для роста эффективности вашей компании' },
+          legal: { code: 'NEP·04', title: 'Юридические вопросы', desc: 'Правовое сопровождение, консультации и поддержка по корпоративным и договорным вопросам для бизнеса' }
+        },
+        expertise: {
+          e1: { meta: '01', title: 'Экономика и финансы бизнеса', desc: 'Экспертиза бизнес-планов, финансовых моделей и инвестиционных проектов. Глубокий анализ ключевых показателей, экспертная оценка экономической эффективности и рентабельности' },
+          e2: { meta: '02', title: 'Правовая поддержка и судебная экспертиза', desc: 'Квалифицированная юридическая помощь: подготовка экспертных заключений, правовая экспертиза сделок, академическая экспертиза в судах и независимый правовой анализ' },
+          e3: { meta: '03', title: 'Технологии, инновации и автоматизация', desc: 'Оценка технологических решений, экспертиза цифровых проектов, автоматизация бизнес-процессов, а также научная поддержка IT-инициатив и цифровой трансформации' },
+          e4: { meta: '04', title: 'Маркетинг, продвижение и рыночная экспертиза', desc: 'Всесторонний анализ рынка, экспертная поддержка в продвижении бизнеса, разработка эффективных маркетинговых стратегий. Проведение исследований для оценки спроса и точного позиционирования на рынке' },
+          e5: { meta: '05', title: 'Социальные и гуманитарные исследования', desc: 'Социологическая экспертиза бизнес-проектов, культурологический анализ. Помощь в создании комфортной бизнес-среды, изучение поведения клиентов и мотивации сотрудников' }
+        },
+        advantages: {
+          a1: { title: 'Доступ к научному сообществу', desc: 'Компания EXITA объединяет научное и профессиональное сообщество экспертов – специалистов ведущих ВУЗов и НИИ – обеспечивая Вам прямой доступ к передовым знаниям и уникальным компетенциям', stamp: 'ADV·01' },
+          a2: { title: 'Качество и конфиденциальность', desc: 'Функционирование платформы построено с соблюдением требований нормативных стандартов и деловой этики, что гарантирует высокое качество услуг и полную конфиденциальность Ваших данных', stamp: 'ADV·02' },
+          a3: { title: 'Гибкость и персонализация', desc: 'Подбор специалистов (экспертов) осуществляется под каждый конкретный запрос с обеспечением индивидуального подхода к Вашим потребностям', stamp: 'ADV·03' }
+        },
+        process: {
+          p1: { title: 'Заказать услугу', desc: 'Опишите задачу или пришлите техническое задание (вопросы) для подбора формата сотрудничества', meta: 'ENTRY·001 · 01 / 03', progress: 33.33 },
+          p2: { title: 'Подобрать эксперта', desc: 'Наша команда подберет специалиста в соответствии с необходимыми требованиями', meta: 'ENTRY·002 · 02 / 03', progress: 66.66 },
+          p3: { title: 'Получить результат', desc: 'Мы выдаем экспертное заключение, аналитическую справку или проводим консультацию', meta: 'ENTRY·003 · 03 / 03', progress: 100 }
+        }
+      };
+
+      function fadeUpdate(panel, updateFn) {
+        if (!panel) return;
+        if (prefersReducedMotion) {
+          updateFn();
+          return;
+        }
+        panel.classList.add('is-fading');
+        setTimeout(function () {
+          updateFn();
+          panel.classList.remove('is-fading');
+        }, 220);
+      }
+
+      function activateTab(tabs, tab, panelId) {
+        tabs.forEach(function (t) {
+          var active = t === tab;
+          t.classList.toggle('is-active', active);
+          t.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        if (panelId && tab.id) {
+          var panel = document.getElementById(panelId);
+          if (panel) panel.setAttribute('aria-labelledby', tab.id);
+        }
+      }
+
+      function bindExplorer(root, render) {
+        if (!root) return;
+        var tabs = Array.prototype.slice.call(root.querySelectorAll('.explorer-tab'));
+        var panelId = tabs[0] && tabs[0].getAttribute('aria-controls');
+
+        function selectTab(tab) {
+          if (tab.classList.contains('is-active')) return;
+          var id = tab.getAttribute('data-id');
+          activateTab(tabs, tab, panelId);
+          render(id);
+        }
+
+        tabs.forEach(function (tab, index) {
+          tab.addEventListener('click', function () { selectTab(tab); });
+          tab.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            var next = e.key === 'ArrowRight' ? index + 1 : index - 1;
+            if (next < 0) next = tabs.length - 1;
+            if (next >= tabs.length) next = 0;
+            tabs[next].focus();
+            selectTab(tabs[next]);
+          });
+        });
+      }
+
+      bindExplorer(document.querySelector('[data-explorer="services"]'), function (id) {
+        var item = DATA.services[id];
+        var panel = document.getElementById('servicesPanel');
+        fadeUpdate(panel, function () {
+          document.getElementById('servicesCode').textContent = item.code;
+          document.getElementById('servicesTitle').textContent = item.title;
+          document.getElementById('servicesDesc').textContent = item.desc;
+        });
+      });
+
+      bindExplorer(document.querySelector('[data-explorer="expertise"]'), function (id) {
+        var item = DATA.expertise[id];
+        var panel = document.getElementById('expertisePanel');
+        fadeUpdate(panel, function () {
+          document.getElementById('expertiseMeta').textContent = item.meta;
+          document.getElementById('expertiseTitle').textContent = item.title;
+          document.getElementById('expertiseDesc').textContent = item.desc;
+        });
+      });
+
+      bindExplorer(document.querySelector('[data-explorer="advantages"]'), function (id) {
+        var item = DATA.advantages[id];
+        var panel = document.getElementById('advantagesPanel');
+        var stamp = document.querySelector('#advantages .stamp-inner');
+        fadeUpdate(panel, function () {
+          document.getElementById('advantagesTitle').textContent = item.title;
+          document.getElementById('advantagesDesc').textContent = item.desc;
+          if (stamp) stamp.innerHTML = item.stamp.replace('·', '<br>');
+        });
+      });
+
+      bindExplorer(document.querySelector('[data-explorer="process"]'), function (id) {
+        var item = DATA.process[id];
+        var panel = document.getElementById('panel-process');
+        var bar = document.getElementById('processProgress');
+        var meta = document.getElementById('processMeta');
+        fadeUpdate(panel, function () {
+          document.getElementById('processTitle').textContent = item.title;
+          document.getElementById('processDesc').textContent = item.desc;
+          if (meta) {
+            meta.textContent = item.meta;
+            meta.classList.add('ledger-meta');
+          }
+          if (bar) bar.style.width = item.progress + '%';
+        });
+      });
+
+      var calcForm = document.getElementById('calcForm');
+      var calcTotal = document.getElementById('calcTotal');
+      var calcError = document.getElementById('calcError');
+      var baseRates = { economics: 45000, law: 52000, tech: 48000, marketing: 42000, social: 40000 };
+
+      function clearCalcInvalid() {
+        ['direction', 'questions', 'pages'].forEach(function (fid) {
+          var el = document.getElementById(fid);
+          if (el) {
+            el.classList.remove('is-invalid');
+            el.removeAttribute('aria-invalid');
+          }
+        });
+        if (calcError) calcError.classList.remove('is-visible');
+      }
+
+      if (calcForm && calcTotal) {
+        calcForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          clearCalcInvalid();
+          var dirEl = document.getElementById('direction');
+          var qEl = document.getElementById('questions');
+          var pagesEl = document.getElementById('pages');
+          var dir = dirEl.value;
+          var q = parseInt(qEl.value, 10) || 0;
+          var pages = parseInt(pagesEl.value, 10) || 0;
+          var invalid = [];
+          if (!dir) invalid.push(dirEl);
+          if (!q) invalid.push(qEl);
+          if (!pages) invalid.push(pagesEl);
+          if (invalid.length) {
+            calcTotal.textContent = '— ₽';
+            if (calcError) calcError.classList.add('is-visible');
+            invalid.forEach(function (el) {
+              el.classList.add('is-invalid');
+              el.setAttribute('aria-invalid', 'true');
+            });
+            return;
+          }
+          var base = baseRates[dir] || 40000;
+          var pageFactor = pages > 15 ? 1 + (pages - 15) * 0.03 : pages < 15 ? 0.95 : 1;
+          calcTotal.textContent = Math.round(base * q * pageFactor).toLocaleString('ru-RU') + ' ₽';
+        });
+        ['direction', 'questions', 'pages'].forEach(function (fid) {
+          var el = document.getElementById(fid);
+          if (el) el.addEventListener('change', clearCalcInvalid);
+        });
+      }
+
+      var leadForm = document.getElementById('leadForm');
+      var leadSuccess = document.getElementById('leadSuccess');
+      if (leadForm) {
+        leadForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var submitBtn = leadForm.querySelector('button[type="submit"]');
+          var originalLabel = submitBtn ? submitBtn.textContent : '';
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка…';
+          }
+          if (leadSuccess) leadSuccess.classList.remove('is-visible');
+          setTimeout(function () {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalLabel;
+            }
+            leadForm.reset();
+            leadForm.classList.add('is-hidden');
+            if (leadSuccess) leadSuccess.classList.add('is-visible');
+          }, 1200);
+        });
+      }
+    })();
+  </script>
+  <script src="../_shared/proto-theme.js" data-mode="standard" defer></script>
+  <script src="../_shared/proto-stats.js" defer></script>
+  <script src="../_shared/proto-nav.js" data-current="02" defer></script>
+</body>
+</html>

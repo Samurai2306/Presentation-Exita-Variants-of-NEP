@@ -1,0 +1,533 @@
+/**
+ * Shared responsive + theme readability fixes for all NEP prototypes (v2).
+ */
+
+/* ── Prevent layout blowout ── */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Containers ── */
+.nep-container,
+[class*="nep-container"]:not([class*="proto"]),
+.container:not(.proto-nav *) {
+  width: 100%;
+  max-width: 92rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* ── Omni-Bar: desktop only (avoid double burger) ── */
+@media (max-width: 1023px) {
+  .omni-bar {
+    display: none !important;
+  }
+
+  .nep-header,
+  .header,
+  header[class*="nep-header"] {
+    top: 0 !important;
+  }
+
+  body.nep-v2-scope,
+  .page,
+  .page-wrap {
+    padding-top: 0 !important;
+  }
+
+  body:not(.nep-v2-scope) {
+    padding-top: 0 !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nep-header,
+  .header:not(.full-bleed) {
+    top: var(--omni-h, 4rem);
+  }
+}
+
+/* ── Form controls (exclude buttons) ── */
+input:not([type="button"]):not([type="submit"]):not([type="reset"]),
+select,
+textarea,
+.nep-field {
+  color: var(--nep-fg, var(--app-fg, var(--fg, #0f172a)));
+  background: color-mix(
+    in srgb,
+    var(--nep-bg-elevated, var(--app-surface-1, #fff)) 88%,
+    transparent
+  );
+  border: 1px solid var(--nep-border, var(--app-border, #cbd5e1));
+  max-width: 100%;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--nep-fg-subtle, var(--app-fg-subtle, #64748b));
+  opacity: 1;
+}
+
+select option {
+  background: var(--nep-bg-elevated, #fff);
+  color: var(--nep-fg, #0f172a);
+}
+
+html.dark select option,
+html.theme-dark select option {
+  background: var(--nep-bg-elevated, #10182e);
+  color: var(--nep-fg, #eef2ff);
+}
+
+html.dark input:not([type="button"]):not([type="submit"]),
+html.dark select,
+html.dark textarea,
+html.theme-dark input:not([type="button"]):not([type="submit"]),
+html.theme-dark select,
+html.theme-dark textarea {
+  color: var(--nep-fg, #eef2ff);
+  background: color-mix(in srgb, var(--nep-bg-elevated, #10182e) 88%, transparent);
+  border-color: var(--nep-border, rgba(148, 163, 184, 0.22));
+}
+
+html.theme-light input:not([type="button"]):not([type="submit"]),
+html.theme-light select,
+html.theme-light textarea {
+  color: var(--nep-fg, #0f172a);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: color-mix(in srgb, var(--nep-accent, #1d4ed8) 20%, #cbd5e1);
+}
+
+/* ── Primary buttons always readable ── */
+.nep-btn-primary,
+.btn-primary,
+a.nep-btn-primary,
+button.nep-btn-primary {
+  color: var(--nep-on-accent, #fff) !important;
+}
+
+.nep-btn-ghost,
+.btn-ghost,
+a.nep-btn-ghost {
+  color: var(--nep-fg, inherit);
+}
+
+/* ── Explorer layouts ── */
+.explorer-grid,
+.explorer:not(.explorer--vertical),
+[class*="explorer-grid"]:not(.explorer-grid--stack),
+.services-explorer,
+.advantages-explorer,
+.process-explorer {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .explorer-grid,
+  .explorer:not(.explorer--stack):not(.explorer--vertical),
+  [class*="explorer-grid"]:not(.explorer-grid--stack),
+  .services-explorer,
+  .advantages-explorer {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+}
+
+/* Tab lists — horizontal scroll on mobile/tablet */
+.explorer-tabs,
+.explorer-list,
+.proto-explorer-tabs,
+.explorer__list,
+[class*="explorer-tabs"],
+[class*="explorer-list"],
+.process-tabs,
+.adv-tabs,
+.process-explorer .explorer-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .explorer-tabs,
+  .explorer-list,
+  .proto-explorer-tabs,
+  .explorer__list,
+  [class*="explorer-tabs"],
+  .process-tabs,
+  .adv-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+    gap: 0.5rem;
+  }
+
+  .explorer-tabs > *,
+  .explorer-list > *,
+  .proto-explorer-tabs > *,
+  .explorer__list > *,
+  [class*="explorer-tabs"] > *,
+  .process-tabs > *,
+  .adv-tabs > * {
+    scroll-snap-align: start;
+    flex: 0 0 min(85vw, 14rem);
+    max-width: 14rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .explorer-tabs,
+  .explorer-list,
+  .proto-explorer-tabs,
+  [class*="explorer-tabs"] {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .explorer-tabs > *,
+  .explorer-list > *,
+  .proto-explorer-tabs > * {
+    flex: unset;
+    max-width: none;
+  }
+}
+
+/* ── Header / nav mobile ── */
+@media (max-width: 1023px) {
+  .nep-nav,
+  .nav:not(.mobile-nav):not(.is-open):not(.proto-nav-list),
+  .nep-header-nav,
+  .nep-header__nav,
+  header nav:not(.mobile-nav):not([class*="proto-nav"]) {
+    display: none !important;
+  }
+
+  .menu-toggle,
+  .mobile-menu-btn,
+  .nep-header__menu,
+  [id="menuToggle"] {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-cta,
+  .nep-header-actions > .nep-btn-primary,
+  .header-actions > .nep-btn-primary:not(.mobile-nav *) {
+    display: none !important;
+  }
+
+  .nep-header-inner,
+  .nep-header__inner,
+  .header-inner,
+  .nep-header-grid {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    min-width: 0;
+    align-items: center;
+  }
+
+  .nep-logo,
+  .logo,
+  .nep-header-brand {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .nep-logo-title,
+  .logo strong,
+  .nep-header-logo {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .nep-logo-sub,
+  .logo span:not(.logo-mark) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nep-header-actions,
+  .header-actions,
+  .nep-header__actions {
+    flex-shrink: 0;
+    gap: 0.35rem;
+  }
+
+  .lang-switch {
+    display: none;
+  }
+
+  .lang-toggle,
+  [id="langToggle"] {
+    display: inline-flex !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .lang-switch {
+    display: flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .menu-toggle,
+  .mobile-menu-btn,
+  .nep-header__menu,
+  [id="menuToggle"] {
+    display: none !important;
+  }
+
+  .mobile-nav:not(.open) {
+    display: none !important;
+  }
+}
+
+/* Mobile nav panel */
+.mobile-nav,
+.nav.is-open,
+[id="mainNav"].is-open,
+.nep-header__drawer.is-open {
+  z-index: 150;
+}
+
+.mobile-nav-overlay,
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 140;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+}
+
+.mobile-nav-overlay.is-open,
+.nav-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Hero ── */
+.nep-hero-title,
+.hero__title,
+.hero h1,
+[class*="hero-title"] {
+  font-size: clamp(1.75rem, 5.5vw, 3.25rem);
+  overflow-wrap: anywhere;
+  line-height: 1.12;
+}
+
+.nep-hero-subline,
+.hero__eyebrow + .nep-hero-subline {
+  opacity: 0.85;
+}
+
+.hero-ctas,
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+@media (max-width: 480px) {
+  .hero-ctas .nep-btn-primary,
+  .hero-ctas .nep-btn-ghost,
+  .hero__actions .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+/* Clearance for fixed proto-nav toggle on mobile hero CTAs */
+@media (max-width: 767px) {
+  .hero-ctas,
+  .hero__actions,
+  .hero-actions,
+  .hero__cta-row {
+    margin-bottom: 1rem;
+    padding-bottom: 3.5rem;
+  }
+}
+
+/* ── Grids ── */
+@media (max-width: 767px) {
+  .pillar-grid,
+  .pillars,
+  .pillars-grid,
+  .lead-grid,
+  .lead-section,
+  .footer-grid,
+  .nep-footer__grid,
+  .footer__grid,
+  .news-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .calc-grid,
+  .calc-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stats-grid,
+  .stats-dash {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .pillar-grid,
+  .pillars,
+  .pillars-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .stats-grid,
+  .stats-dash {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .calc-grid,
+  .calc-layout {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .lead-grid,
+  .lead-section {
+    grid-template-columns: 1fr !important;
+  }
+
+  .footer-grid,
+  .nep-footer__grid,
+  .footer__grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-grid,
+  .nep-footer__grid,
+  .footer__grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .stats-grid,
+  .stats-dash {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .pillar-grid,
+  .pillars,
+  .pillars-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .lead-grid,
+  .lead-section {
+    grid-template-columns: 5fr 7fr !important;
+  }
+
+  .calc-grid,
+  .calc-layout {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ── Tap targets ── */
+button,
+.nep-btn-primary,
+.nep-btn-ghost,
+.icon-btn,
+a.nep-btn-primary,
+a.nep-btn-ghost {
+  min-height: 2.75rem;
+}
+
+/* ── Section spacing ── */
+.nep-section,
+section[class*="section"]:not(.proto-nav *) {
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+
+/* ── Panels inherit text ── */
+.nep-panel,
+.nep-pillar-card,
+[class*="nep-panel"]:not(.proto-nav-panel),
+.glass {
+  color: var(--nep-fg, inherit);
+}
+
+.section-hint,
+[class*="section-hint"] {
+  color: var(--nep-fg-muted, var(--app-fg-muted, inherit));
+  font-style: italic;
+}
+
+/* ── Stats ── */
+.stat-value,
+.stat-card__value,
+[class*="stat-value"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Theme transition ── */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.28s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease !important;
+}
+
+/* ── Proto badge vs nav ── */
+@media (max-width: 767px) {
+  .proto-badge,
+  .prototype-badge {
+    max-width: calc(100vw - 8rem);
+    font-size: 0.625rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  #proto-nav-toggle {
+    padding: 0.5rem 0.65rem;
+  }
+
+  #proto-nav-toggle .proto-nav-toggle__text {
+    display: none;
+  }
+}
