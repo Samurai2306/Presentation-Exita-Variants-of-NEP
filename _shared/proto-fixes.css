@@ -6,6 +6,19 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+/* Якорная навигация с учётом sticky header / omni-bar */
+:target {
+  scroll-margin-top: calc(var(--omni-h, 0px) + var(--header-h, 4.25rem) + 1rem);
+}
+
+section[id],
+main[id],
+[id="nep-lead-form"],
+[id="top"] {
+  scroll-margin-top: calc(var(--omni-h, 0px) + var(--header-h, 4.25rem) + 1rem);
 }
 
 body {

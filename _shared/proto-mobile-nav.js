@@ -139,7 +139,21 @@
       overlay.addEventListener("click", close);
     }
 
-    panel.querySelectorAll("a").forEach(function (link) {
+    panel.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      link.addEventListener("click", function () {
+        close();
+        var hash = link.getAttribute("href");
+        if (!hash || hash === "#") return;
+        var target = document.querySelector(hash);
+        if (target) {
+          window.requestAnimationFrame(function () {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
+      });
+    });
+
+    panel.querySelectorAll('a:not([href^="#"])').forEach(function (link) {
       link.addEventListener("click", close);
     });
 
