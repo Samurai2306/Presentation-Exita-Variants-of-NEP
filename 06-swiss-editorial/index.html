@@ -9,14 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../_shared/proto-fixes.css" />
-  <script>
-    (function () {
-      try {
-        var t = localStorage.getItem("nep-proto-theme");
-        if (t === "dark") document.documentElement.classList.add("theme-dark");
-      } catch (e) {}
-    })();
-  </script>
+  <script src="../_shared/proto-theme-init.js" data-mode="overlay-dark"></script>
   <style>
     :root {
       --swiss-black: #0a0a0a;
@@ -2279,26 +2272,6 @@
         processProgress.style.setProperty("--progress-pct", ((idx + 1) / items.length) * 100);
       });
 
-      /* Mobile menu */
-      var menuBtn = document.getElementById("menu-btn");
-      var mobileNav = document.getElementById("mobile-nav");
-      function setMobileMenu(open) {
-        if (!mobileNav || !menuBtn) return;
-        mobileNav.classList.toggle("is-open", open);
-        menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-        document.body.style.overflow = open ? "hidden" : "";
-      }
-      if (menuBtn && mobileNav) {
-        menuBtn.addEventListener("click", function () {
-          setMobileMenu(!mobileNav.classList.contains("is-open"));
-        });
-        mobileNav.querySelectorAll("a").forEach(function (link) {
-          link.addEventListener("click", function () {
-            setMobileMenu(false);
-          });
-        });
-      }
-
       document.getElementById("omni-btn")?.addEventListener("click", function () {
         /* Прототип: Omni-Bar → ProjectNavSheet в продакшене */
       });
@@ -2367,6 +2340,7 @@
       }
     })();
   </script>
+  <script src="../_shared/proto-mobile-nav.js" defer></script>
   <script src="../_shared/proto-stats.js" defer></script>
   <script src="../_shared/proto-theme.js" data-mode="overlay-dark" defer></script>
   <script src="../_shared/proto-nav.js" data-current="06" defer></script>

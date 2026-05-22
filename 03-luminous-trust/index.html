@@ -3,15 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    (function () {
-      try {
-        if (localStorage.getItem("nep-proto-theme") === "dark") {
-          document.documentElement.classList.add("dark");
-        }
-      } catch (e) {}
-    })();
-  </script>
+  <script src="../_shared/proto-theme-init.js" data-mode="inverted"></script>
   <title>EXITA Н.Э.П. — Luminous Trust × NEP v2</title>
   <meta name="description" content="Независимая экспертная платформа на стыке науки, экономики и права. Наука · Экономика · Право." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1996,48 +1988,6 @@
         if (e.target === omniSheet) setOmni(false);
       });
 
-      /* NepHeader mobile */
-      var headerMenuBtn = document.getElementById("headerMenuBtn");
-      var headerMobileNav = document.getElementById("headerMobileNav");
-      var mobileNavOverlay = document.getElementById("mobileNavOverlay");
-
-      function syncMobileNavTop() {
-        if (!headerMobileNav) return;
-        var header = document.getElementById("nepHeader");
-        var top = header ? header.getBoundingClientRect().bottom : 68;
-        document.documentElement.style.setProperty("--header-mobile-top", top + "px");
-      }
-
-      function setMobileNav(open) {
-        headerMobileNav.hidden = !open;
-        headerMobileNav.classList.toggle("is-open", open);
-        if (mobileNavOverlay) {
-          mobileNavOverlay.hidden = !open;
-          mobileNavOverlay.classList.toggle("is-open", open);
-          mobileNavOverlay.setAttribute("aria-hidden", open ? "false" : "true");
-        }
-        headerMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-        document.body.style.overflow = open ? "hidden" : "";
-        if (open) syncMobileNavTop();
-      }
-
-      syncMobileNavTop();
-      window.addEventListener("resize", syncMobileNavTop, { passive: true });
-
-      headerMenuBtn.addEventListener("click", function () {
-        setMobileNav(headerMobileNav.hidden);
-      });
-
-      if (mobileNavOverlay) {
-        mobileNavOverlay.addEventListener("click", function () {
-          setMobileNav(false);
-        });
-      }
-
-      headerMobileNav.querySelectorAll("a").forEach(function (link) {
-        link.addEventListener("click", function () { setMobileNav(false); });
-      });
-
       function setLang(lang) {
         document.querySelectorAll(".lang-switch button").forEach(function (btn) {
           btn.classList.toggle("is-active", btn.getAttribute("data-lang") === lang);
@@ -2325,6 +2275,7 @@
       });
     })();
   </script>
+  <script src="../_shared/proto-mobile-nav.js" defer></script>
   <script src="../_shared/proto-theme.js" data-mode="inverted" defer></script>
   <script src="../_shared/proto-stats.js" defer></script>
   <script src="../_shared/proto-nav.js" data-current="03" defer></script>

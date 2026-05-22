@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class="nep-scrollbar-thin">
+<html lang="ru" class="nep-scrollbar-thin" data-proto-mobile-nav="custom">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,14 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../_shared/proto-fixes.css" />
-  <script>
-    (function () {
-      try {
-        var t = localStorage.getItem("nep-proto-theme");
-        if (t === "dark") document.documentElement.classList.add("theme-dark");
-      } catch (e) {}
-    })();
-  </script>
+  <script src="../_shared/proto-theme-init.js" data-mode="overlay-dark"></script>
   <style>
     :root {
       --nep-accent: #1d4ed8;
@@ -1441,7 +1434,8 @@
         <a href="#nep-lead-form" class="nep-btn-primary nep-btn-primary--sm header-cta">Оставить заявку</a>
       </div>
     </div>
-    <nav class="nep-container nep-header__mobile" id="headerMobile" aria-label="Мобильное меню">
+    <div class="mobile-nav-overlay" id="headerMobileOverlay" hidden aria-hidden="true"></div>
+    <nav class="nep-container nep-header__mobile" id="headerMobile" aria-label="Мобильное меню" aria-hidden="true">
       <a href="#services">Экспертиза</a>
       <a href="#services">Оценка</a>
       <a href="#services">Консалтинг</a>
@@ -2050,10 +2044,52 @@
         if (e.target === omniDrawer) setOmniOpen(false);
       });
 
+      var headerMobileOverlay = document.getElementById("headerMobileOverlay");
+
+      function syncHeaderMobileTop() {
+        var hdr = document.querySelector(".nep-header");
+        var top = hdr ? hdr.getBoundingClientRect().bottom : 72;
+        document.documentElement.style.setProperty("--header-mobile-top", top + "px");
+      }
+      syncHeaderMobileTop();
+      window.addEventListener("resize", syncHeaderMobileTop, { passive: true });
+
       headerMenu.addEventListener("click", function () {
         var open = headerMobile.classList.toggle("is-open");
         headerMenu.setAttribute("aria-expanded", open ? "true" : "false");
+        headerMobile.setAttribute("aria-hidden", open ? "false" : "true");
+        if (headerMobileOverlay) {
+          headerMobileOverlay.classList.toggle("is-open", open);
+          headerMobileOverlay.setAttribute("aria-hidden", open ? "false" : "true");
+          if (open) headerMobileOverlay.removeAttribute("hidden");
+          else headerMobileOverlay.setAttribute("hidden", "");
+        }
+        if (open) syncHeaderMobileTop();
         syncBodyOverflow();
+      });
+
+      if (headerMobileOverlay) {
+        headerMobileOverlay.addEventListener("click", function () {
+          headerMobile.classList.remove("is-open");
+          headerMenu.setAttribute("aria-expanded", "false");
+          headerMobile.setAttribute("aria-hidden", "true");
+          headerMobileOverlay.classList.remove("is-open");
+          headerMobileOverlay.setAttribute("hidden", "");
+          headerMobileOverlay.setAttribute("aria-hidden", "true");
+          syncBodyOverflow();
+        });
+      }
+
+      headerMobile.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          headerMobile.classList.remove("is-open");
+          headerMenu.setAttribute("aria-expanded", "false");
+          if (headerMobileOverlay) {
+            headerMobileOverlay.classList.remove("is-open");
+            headerMobileOverlay.setAttribute("hidden", "");
+          }
+          syncBodyOverflow();
+        });
       });
 
       document.getElementById("langToggle").addEventListener("click", function () {

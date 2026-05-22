@@ -1,5 +1,6 @@
 /**
  * Unified theme toggle for NEP prototypes.
+ * <script src="../_shared/proto-theme-init.js" data-mode="standard"></script>
  * <script src="../_shared/proto-theme.js" data-mode="standard" defer></script>
  *
  * Modes: standard | inverted | theme-light | overlay-dark
@@ -20,6 +21,9 @@
   }
 
   function readTheme() {
+    var stored = html.dataset.nepTheme;
+    if (stored === "light" || stored === "dark") return stored;
+
     switch (MODE) {
       case "inverted":
         return html.classList.contains("dark") ? "dark" : "light";
@@ -70,11 +74,24 @@
       "aria-label",
       theme === "dark" ? "Включить светлую тему" : "Включить тёмную тему"
     );
+    btn.setAttribute("title", theme === "dark" ? "Светлая тема" : "Тёмная тема");
   }
 
   function init() {
-    var stored = localStorage.getItem(KEY);
-    var theme = stored === "light" || stored === "dark" ? stored : defaultTheme();
+    var stored;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch (e) {
+      stored = null;
+    }
+
+    var theme =
+      html.dataset.nepTheme === "light" || html.dataset.nepTheme === "dark"
+        ? html.dataset.nepTheme
+        : stored === "light" || stored === "dark"
+          ? stored
+          : defaultTheme();
+
     applyTheme(theme, false);
 
     var btn = document.getElementById("themeToggle");
@@ -84,7 +101,9 @@
       var current = html.dataset.nepTheme || readTheme();
       var next = current === "dark" ? "light" : "dark";
       applyTheme(next, true);
-      localStorage.setItem(KEY, next);
+      try {
+        localStorage.setItem(KEY, next);
+      } catch (e) {}
     });
   }
 
